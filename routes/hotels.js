@@ -10,22 +10,28 @@ import {
   countByType,
   getHotelRooms,
   updateHotelAvailability,
+  getTableHotelRooms,
+  getTableHotels,
 } from "../controllers/hotel.js";
+import { createRoom, deleteRoom } from "../controllers/room.js";
 import { verifyAdmin } from "../utils/verifyToken.js";
 const router = express.Router();
 
+router.get("/", getHotels);
 router.post("/", createHotel);
 
+router.get("/:id", getHotel);
 router.put("/:id", updateHotel);
-router.put("/availability/:id", updateHotelAvailability);
-
 router.delete("/:id", deleteHotel);
+router.get("/:id/roomData", getTableHotelRooms);
+router.put("/:id/availability", updateHotelAvailability);
 
-router.get("/find/:id", getHotel);
+router.get("/:id/rooms", getHotelRooms);
+router.post("/:id/rooms", createRoom);
+router.delete("/:id/rooms/:roomId", deleteRoom);
 
-router.get("/", getHotels);
 router.get("/countByCity", countByCity);
 router.get("/countByType", countByType);
-router.get("/room/:id", getHotelRooms);
+router.get("/hotelData", verifyAdmin, getTableHotels);
 
 export default router;

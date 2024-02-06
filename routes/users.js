@@ -5,16 +5,14 @@ import {
   getUser,
   getUsers,
 } from "../controllers/user.js";
-import { verifyToken, verifyUser, verifyAdmin } from "../utils/verifyToken.js";
+import { verifyUser, verifyAdmin } from "../utils/verifyToken.js";
 
 const router = express.Router();
 
-router.put("/:id", verifyUser, updateUser);
-
-router.delete("/:id", verifyUser, deleteUser);
+router.get("/", verifyAdmin, getUsers);
 
 router.get("/:id", verifyUser, getUser);
-
-router.get("/", verifyAdmin, getUsers);
+router.put("/:id", verifyUser, updateUser);
+router.delete("/:id", verifyUser, deleteUser);
 
 export default router;
