@@ -53,7 +53,18 @@ const HotelSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  unavailableDates: [{ type: Date }],
+  unavailableDates: [
+    {
+      userId: {
+        type: String,
+        required: true,
+      },
+      date: {
+        type: Date,
+        required: true,
+      },
+    },
+  ],
 });
 
 export default mongoose.model("Hotel", HotelSchema);

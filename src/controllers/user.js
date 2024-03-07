@@ -35,8 +35,49 @@ export const getUser = async (req, res, next) => {
 
 export const getUsers = async (req, res, next) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
+    const columns = [
+      {
+        field: "id",
+        headerName: "",
+        width: 80,
+        align: "center",
+      },
+      {
+        field: "_id",
+        headerName: "ID",
+        width: 350,
+        headerStyle: {
+          textAlign: "center",
+        },
+      },
+      {
+        field: "username",
+        headerName: "User",
+        width: 300,
+        headerStyle: {
+          textAlign: "center",
+        },
+      },
+      {
+        field: "email",
+        headerName: "Email",
+        width: 350,
+        headerStyle: {
+          textAlign: "center",
+        },
+      },
+    ];
+
+    if (req.user.isAdmin) {
+      const users = await User.find();
+      const rows = users.map((item, index) => ({
+        id: index + 1,
+        _id: item._id,
+        username: item.username,
+        email: item.email,
+      }));
+      res.status(200).json({ column: columns, row: rows });
+    }
   } catch (err) {
     next(err);
   }

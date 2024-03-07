@@ -29,11 +29,16 @@ export const updateHotel = async (req, res, next) => {
 
 export const updateHotelAvailability = async (req, res, next) => {
   try {
+    const userId = req.body.userId;
+    const dates = req.body.dates;
     await Hotel.updateOne(
       { _id: req.params.id },
       {
         $push: {
-          unavailableDates: req.body.dates,
+          unavailableDates: dates.map((date) => ({
+            userId: userId,
+            date: date,
+          })),
         },
       }
     );

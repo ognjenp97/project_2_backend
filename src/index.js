@@ -9,7 +9,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 const app = express();
 dotenv.config();
-app.use(cors());
 
 const connect = async () => {
   try {
@@ -24,6 +23,12 @@ mongoose.connection.on("disconnected", () => {
   console.log("mongoDB disconnected!");
 });
 
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 
