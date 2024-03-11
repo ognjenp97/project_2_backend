@@ -2,7 +2,14 @@ import jwt from "jsonwebtoken";
 import { createError } from "../utils/error.js";
 
 export const verifyToken = (req, res, next) => {
-  const token = req.cookies.access_token;
+  const authorizationHeader = req.headers["authorization"];
+  if (!authorizationHeader) {
+    return next(createError(401, "You are not authenticated!"));
+  }
+  const [authType, token] = authorizationHeader.split(" ");
+  if (authType !== "Bearer" || !token) {
+    return next(createError(403, "Invalid authorization header!"));
+  }
   if (!token) {
     return next(createError(401, "You are not authenticated!"));
   }
