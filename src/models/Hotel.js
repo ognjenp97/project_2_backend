@@ -19,7 +19,7 @@ const HotelSchema = new mongoose.Schema({
     required: true,
   },
   distance: {
-    type: String,
+    type: Number,
     required: true,
   },
   photos: {
@@ -46,14 +46,25 @@ const HotelSchema = new mongoose.Schema({
     required: true,
   },
   userId: {
-    type: [String],
+    type: String,
     required: true,
   },
   featured: {
     type: Boolean,
     default: true,
   },
-  unavailableDates: [{ type: Date }],
+  unavailableDates: [
+    {
+      userId: {
+        type: String,
+        required: true,
+      },
+      date: {
+        type: Date,
+        required: true,
+      },
+    },
+  ],
 });
 
 export default mongoose.model("Hotel", HotelSchema);

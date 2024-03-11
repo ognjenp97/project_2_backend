@@ -3,7 +3,7 @@ import Hotel from "../models/Hotel.js";
 import { createError } from "../utils/error.js";
 
 export const createRoom = async (req, res, next) => {
-  const hotelId = req.params.hotelid;
+  const hotelId = req.params.id;
   const newRoom = new Room(req.body);
 
   try {
@@ -36,11 +36,17 @@ export const updateRoom = async (req, res, next) => {
 
 export const updateRoomAvailability = async (req, res, next) => {
   try {
+    const userId = req.body.userId;
+    const dates = req.body.dates;
+
     await Room.updateOne(
       { "roomNumbers._id": req.params.id },
       {
         $push: {
-          "roomNumbers.$.unavailableDates": req.body.dates,
+          "roomNumbers.$.unavailableDates": dates.map((date) => ({
+            userId: userId,
+            date: date,
+          })),
         },
       }
     );
@@ -51,12 +57,13 @@ export const updateRoomAvailability = async (req, res, next) => {
 };
 
 export const deleteRoom = async (req, res, next) => {
-  const hotelId = req.params.hotelid;
+  const hotelId = req.params.id;
+  const roomId = req.params.roomId;
   try {
-    await Room.findByIdAndDelete(req.params.id);
+    await Room.findByIdAndDelete(roomId);
     try {
       await Hotel.findByIdAndUpdate(hotelId, {
-        $pull: { rooms: req.params.id },
+        $pull: { rooms: roomId },
       });
     } catch (err) {
       next(err);

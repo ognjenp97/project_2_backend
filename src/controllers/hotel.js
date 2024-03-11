@@ -1,10 +1,10 @@
+import { Roles } from "../middleware/authorization-middleware.js";
 import Hotel from "../models/Hotel.js";
 import Room from "../models/Room.js";
 
 export const createHotel = async (req, res, next) => {
-  const newHotel = new Hotel(req.body);
-
   try {
+    const newHotel = new Hotel(req.body);
     const savedHotel = await newHotel.save();
     res.status(200).json(savedHotel);
   } catch (err) {
@@ -29,11 +29,16 @@ export const updateHotel = async (req, res, next) => {
 
 export const updateHotelAvailability = async (req, res, next) => {
   try {
+    const userId = req.body.userId;
+    const dates = req.body.dates;
     await Hotel.updateOne(
       { _id: req.params.id },
       {
         $push: {
-          unavailableDates: req.body.dates,
+          unavailableDates: dates.map((date) => ({
+            userId: userId,
+            date: date,
+          })),
         },
       }
     );
@@ -125,6 +130,119 @@ export const getHotelRooms = async (req, res, next) => {
       })
     );
     res.status(200).json(list);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTableHotelRooms = async (req, res, next) => {
+  try {
+    const hotel = await Hotel.findById(req.params.id);
+    const list = await Promise.all(
+      hotel.rooms.map((room) => {
+        return Room.findById(room);
+      })
+    );
+    const columns = [
+      {
+        field: "id",
+        headerName: "",
+        width: 30,
+        align: "center",
+      },
+      {
+        field: "title",
+        headerName: "Title",
+        width: 300,
+      },
+      {
+        field: "price",
+        headerName: "Price (€)",
+        width: 150,
+      },
+      {
+        field: "maxPeople",
+        headerName: "Max. people",
+        width: 150,
+      },
+      {
+        field: "roomNumbers",
+        headerName: "Room numbers",
+        width: 400,
+      },
+    ];
+
+    const rows = list.map((item, index) => ({
+      id: index + 1,
+      title: item.title,
+      maxPeople: item.maxPeople,
+      price: item.price,
+      roomNumbers: item.roomNumbers.map((room) => room.number),
+      _id: item._id,
+    }));
+
+    res.status(200).json({ columns: columns, rows: rows, id: hotel._id });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTableHotels = async (req, res, next) => {
+  try {
+    const columns = [
+      {
+        field: "name",
+        headerName: "Name",
+        width: 200,
+      },
+      {
+        field: "title",
+        headerName: "Title",
+        width: 200,
+      },
+      {
+        field: "city",
+        headerName: "City",
+        width: 200,
+      },
+      {
+        field: "type",
+        headerName: "Type",
+        width: 140,
+      },
+    ];
+
+    if (req.user.roles.includes(Roles.ADMIN)) {
+      const hotels = await Hotel.find({}).limit(req.query.limit);
+      const rows = hotels.map((item) => ({
+        name: item.name,
+        type: item.type,
+        city: item.city,
+        title: item.title,
+        room: item.rooms,
+        _id: item._id,
+      }));
+      const photo = hotels.map((item, index) => ({
+        photo: item.photos[0],
+      }));
+      res.status(200).json({ column: columns, row: rows, photo: photo });
+    } else {
+      const hotels = await Hotel.find({
+        userId: req.user.id,
+      }).limit(req.query.limit);
+      const rows = hotels.map((item) => ({
+        name: item.name,
+        type: item.type,
+        city: item.city,
+        title: item.title,
+        room: item.rooms,
+        _id: item._id,
+      }));
+      const photo = hotels.map((item) => ({
+        photo: item.photos[0],
+      }));
+      res.status(200).json({ column: columns, row: rows, photo: photo });
+    }
   } catch (err) {
     next(err);
   }
