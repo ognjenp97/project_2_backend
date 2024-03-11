@@ -5,14 +5,25 @@ import {
   updateRoom,
   updateRoomAvailability,
 } from "../controllers/room.js";
-import { verifyAdmin, verifyUser } from "../utils/verifyToken.js";
+import validate from "../middleware/validation-middleware.js";
+import authorize, { Roles } from "../middleware/authorization-middleware.js";
+import { RoomSchema } from "../validation/yup-schemes.js";
 
 const router = express.Router();
 
-router.get("/", verifyUser, verifyAdmin, getRooms);
+router.get("/", authorize([Roles.ADMIN, Roles.USER]), getRooms);
 
-router.put("/:id", verifyUser, verifyAdmin, updateRoom);
-router.get("/:id", verifyUser, verifyAdmin, getRoom);
-router.put("/:id/availability", updateRoomAvailability);
+router.put(
+  "/:id",
+  authorize([Roles.ADMIN, Roles.USER]),
+  validate(RoomSchema),
+  updateRoom
+);
+router.get("/:id", authorize([Roles.ADMIN, Roles.USER]), getRoom);
+router.put(
+  "/:id/availability",
+  authorize([Roles.ADMIN, Roles.USER]),
+  updateRoomAvailability
+);
 
 export default router;

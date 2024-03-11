@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import { createError } from "../utils/error.js";
 import jwt from "jsonwebtoken";
+import { Roles } from "../middleware/authorization-middleware.js";
 
 export const register = async (req, res, next) => {
   try {
@@ -41,7 +42,7 @@ export const login = async (req, res, next) => {
       return next(createError(400, "Wrong password or username!"));
 
     const token = jwt.sign(
-      { id: user._id, isAdmin: user.isAdmin },
+      { id: user._id, roles: [user.isAdmin ? Roles.ADMIN : Roles.USER] },
       process.env.JWT
     );
 
