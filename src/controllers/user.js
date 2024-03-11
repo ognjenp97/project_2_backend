@@ -68,16 +68,14 @@ export const getUsers = async (req, res, next) => {
       },
     ];
 
-    if (req.user.isAdmin) {
-      const users = await User.find();
-      const rows = users.map((item, index) => ({
-        id: index + 1,
-        _id: item._id,
-        username: item.username,
-        email: item.email,
-      }));
-      res.status(200).json({ column: columns, row: rows });
-    }
+    const users = await User.find({ isAdmin: false });
+    const rows = users.map((item, index) => ({
+      id: index + 1,
+      _id: item._id,
+      username: item.username,
+      email: item.email,
+    }));
+    res.status(200).json({ column: columns, row: rows });
   } catch (err) {
     next(err);
   }
